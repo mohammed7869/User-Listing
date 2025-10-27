@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,95 +24,53 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Sample user data
-const initialUsers = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 234 567 8900",
-    location: "New York, USA",
-    role: "Administrator",
-    status: "Active",
-    avatar: null,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "+1 234 567 8901",
-    location: "Los Angeles, USA",
-    role: "Manager",
-    status: "Active",
-    avatar: null,
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    email: "michael.j@example.com",
-    phone: "+1 234 567 8902",
-    location: "Chicago, USA",
-    role: "Developer",
-    status: "Inactive",
-    avatar: null,
-  },
-  {
-    id: 4,
-    name: "Sarah Williams",
-    email: "sarah.w@example.com",
-    phone: "+1 234 567 8903",
-    location: "Houston, USA",
-    role: "Designer",
-    status: "Active",
-    avatar: null,
-  },
-  {
-    id: 5,
-    name: "David Brown",
-    email: "david.brown@example.com",
-    phone: "+1 234 567 8904",
-    location: "Miami, USA",
-    role: "Manager",
-    status: "Active",
-    avatar: null,
-  },
-  {
-    id: 6,
-    name: "Emily Davis",
-    email: "emily.davis@example.com",
-    phone: "+1 234 567 8905",
-    location: "Seattle, USA",
-    role: "Developer",
-    status: "Inactive",
-    avatar: null,
-  },
-  {
-    id: 7,
-    name: "Robert Wilson",
-    email: "robert.w@example.com",
-    phone: "+1 234 567 8906",
-    location: "Boston, USA",
-    role: "Administrator",
-    status: "Active",
-    avatar: null,
-  },
-  {
-    id: 8,
-    name: "Lisa Martinez",
-    email: "lisa.m@example.com",
-    phone: "+1 234 567 8907",
-    location: "Denver, USA",
-    role: "Designer",
-    status: "Active",
-    avatar: null,
-  },
-];
+import { apiService } from "@/lib/api";
 
 function UserListing() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await apiService.fetchUsers(0);
+
+        // Transform API response to match expected format
+        // API returns: { id, name, userName, createdDate }
+        const transformedUsers = Array.isArray(data)
+          ? data.map((user, index) => ({
+              id: user.id || index + 1,
+              name: user.name || "Unknown User",
+              email: user.userName
+                ? `${user.userName}@example.com`
+                : "No email",
+              phone: "No phone",
+              location: "No location",
+              role: user.role || "User",
+              status: "Active",
+              avatar: null,
+              userName: user.userName || "",
+              createdDate: user.createdDate || "",
+            }))
+          : [];
+
+        setUsers(transformedUsers);
+      } catch (err) {
+        setError(err.message || "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -132,6 +91,35 @@ function UserListing() {
       .join("")
       .toUpperCase();
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -240,69 +228,75 @@ function UserListing() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredUsers.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-accent"
-              >
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-1">
+          {filteredUsers.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No users found</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-accent"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">{user.name}</p>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          user.status === "Active"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                        }`}
+                      >
+                        {user.status}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        <span>{user.email}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        <span>{user.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{user.location}</span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-primary font-medium">
+                      {user.role}
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold">{user.name}</p>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        user.status === "Active"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      <span>{user.email}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      <span>{user.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{user.location}</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-primary font-medium">
-                    {user.role}
+                    <Button variant="ghost" size="sm">
+                      View Details
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Edit User</DropdownMenuItem>
+                        <DropdownMenuItem>Reset Password</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                          Delete User
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    View Details
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Edit User</DropdownMenuItem>
-                      <DropdownMenuItem>Reset Password</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive focus:text-destructive">
-                        Delete User
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

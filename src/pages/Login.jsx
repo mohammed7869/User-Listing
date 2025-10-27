@@ -9,21 +9,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { apiService } from "@/lib/api";
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    // Simple authentication check
-    if (email === "admin@example.com" && password === "admin123") {
+    try {
+      const data = await apiService.login(username, password);
+
+      // Store user data and token in localStorage
+      localStorage.setItem("accessToken", data.AccessToken);
+      localStorage.setItem("refreshToken", data.RefreshToken);
+      localStorage.setItem("userName", data.UserName);
+      localStorage.setItem("name", data.Name);
+      localStorage.setItem("role", data.Role);
+      localStorage.setItem("profileImage", data.ProfileImage);
+      localStorage.setItem("forcePwdChange", data.ForcePwdChange);
+      localStorage.setItem("consentAccepted", data.ConsentAccepted);
+      localStorage.setItem("isGuestUser", data.IsGuestUser);
+
+      // Trigger the login callback
       onLogin();
-    } else {
-      setError("Invalid email or password");
+    } catch (err) {
+      setError(err.message || "Invalid username or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,13 +59,13 @@ function Login({ onLogin }) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
@@ -68,14 +86,14 @@ function Login({ onLogin }) {
               </div>
             )}
             <div className="pt-2">
-              <Button type="submit" className="w-full" size="lg">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? "Signing In..." : "Sign In"}
               </Button>
-            </div>
-            <div className="text-center text-sm text-muted-foreground pt-4 border-t">
-              <p>Demo Credentials:</p>
-              <p>Email: admin@example.com</p>
-              <p>Password: admin123</p>
             </div>
           </form>
         </CardContent>

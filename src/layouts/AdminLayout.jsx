@@ -18,6 +18,12 @@ function AdminLayout({ children, onLogout }) {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Get user information from localStorage
+  const userName = localStorage.getItem("userName") || "User";
+  const userRole = localStorage.getItem("role") || "";
+  const userNameDisplay = localStorage.getItem("name") || userName;
+  const profileImage = localStorage.getItem("profileImage");
+
   const handleLogout = () => {
     onLogout();
     navigate("/login");
@@ -55,8 +61,13 @@ function AdminLayout({ children, onLogout }) {
                   className="relative h-10 w-10 rounded-full"
                 >
                   <Avatar>
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
-                    <AvatarFallback>AD</AvatarFallback>
+                    <AvatarImage
+                      src={profileImage || "/placeholder-avatar.jpg"}
+                      alt={userName}
+                    />
+                    <AvatarFallback>
+                      {userName.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -64,10 +75,10 @@ function AdminLayout({ children, onLogout }) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      Admin User
+                      {userNameDisplay}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      admin@example.com
+                      {userRole}
                     </p>
                   </div>
                 </DropdownMenuLabel>

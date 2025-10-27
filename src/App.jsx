@@ -11,17 +11,24 @@ import UserListing from "./pages/UserListing";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem("isAuthenticated") === "true"
+    !!localStorage.getItem("accessToken")
   );
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    localStorage.setItem("isAuthenticated", "true");
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("name");
+    localStorage.removeItem("role");
+    localStorage.removeItem("profileImage");
+    localStorage.removeItem("forcePwdChange");
+    localStorage.removeItem("consentAccepted");
+    localStorage.removeItem("isGuestUser");
   };
 
   return (
