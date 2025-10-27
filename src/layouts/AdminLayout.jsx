@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,9 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User, Settings, Menu, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import Sidebar from "@/components/Sidebar";
 
 function AdminLayout({ children, onLogout }) {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     onLogout();
@@ -21,9 +25,23 @@ function AdminLayout({ children, onLogout }) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-50">
+      <header className="border-b bg-card sticky top-0 z-40">
         <div className="flex h-16 items-center px-6">
+          {/* Hamburger Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+
           <div className="flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-semibold">Admin Panel</h1>
@@ -77,7 +95,14 @@ function AdminLayout({ children, onLogout }) {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto py-6 px-6">{children}</main>
+      <main
+        className={cn(
+          "container mx-auto py-6 px-6 transition-all duration-300 ease-in-out",
+          sidebarOpen && "lg:ml-64"
+        )}
+      >
+        {children}
+      </main>
     </div>
   );
 }
