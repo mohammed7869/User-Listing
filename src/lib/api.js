@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "http://103.87.175.111:7253/api/1";
+const API_BASE_URL = "http://cocapi.baawancrm.com/api/1";
 
 // Get authentication token from localStorage
 const getAuthToken = () => {
