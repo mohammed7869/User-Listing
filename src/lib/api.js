@@ -55,7 +55,7 @@ const apiRequest = async (endpoint, options = {}) => {
 // API Service Functions
 export const apiService = {
   // Fetch users
-  async fetchUsers(role = 0) {
+  async fetchUsers(role = 4) {
     const response = await apiRequest("/users", {
       method: "POST",
       body: JSON.stringify({ role }),

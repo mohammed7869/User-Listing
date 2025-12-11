@@ -40,7 +40,7 @@ function UserListing() {
         setLoading(true);
         setError("");
 
-        const data = await apiService.fetchUsers(0);
+        const data = await apiService.fetchUsers(4);
 
         // Transform API response to match expected format
         // API returns: { id, name, userName, createdDate }
