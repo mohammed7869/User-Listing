@@ -8,6 +8,7 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import UserListing from "./pages/UserListing";
+import LayoutListing from "./pages/LayoutListing";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -51,6 +52,7 @@ function App() {
               <AdminLayout onLogout={handleLogout}>
                 <Routes>
                   <Route path="users" element={<UserListing />} />
+                  <Route path="layouts" element={<LayoutListing />} />
                   <Route
                     path="*"
                     element={<Navigate to="/admin/users" replace />}

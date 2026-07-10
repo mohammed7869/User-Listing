@@ -87,6 +87,51 @@ export const apiService = {
     const response = await apiRequest(endpoint, options);
     return await response.json();
   },
+
+  // ---- Game Layouts ----
+
+  // Fetch all game layouts
+  async fetchLayouts() {
+    const response = await apiRequest("/game-layouts/get-all", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    return await response.json();
+  },
+
+  // Fetch a single game layout by ID
+  async fetchLayoutById(id) {
+    const response = await apiRequest(`/game-layouts/get/${id}`, {
+      method: "GET",
+    });
+    return await response.json();
+  },
+
+  // Create a new game layout
+  async createLayout(layoutData) {
+    const response = await apiRequest("/game-layouts/save", {
+      method: "POST",
+      body: JSON.stringify(layoutData),
+    });
+    return await response.json();
+  },
+
+  // Update an existing game layout
+  async updateLayout(layoutData) {
+    const response = await apiRequest("/game-layouts/update", {
+      method: "POST",
+      body: JSON.stringify(layoutData),
+    });
+    return await response.json();
+  },
+
+  // Delete a game layout by ID
+  async deleteLayout(id) {
+    const response = await apiRequest(`/game-layouts/delete/${id}`, {
+      method: "DELETE",
+    });
+    return await response.json();
+  },
 };
 
 export default apiService;

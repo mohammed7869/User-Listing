@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   Users,
   LayoutDashboard,
+  LayoutGrid,
   UserCog,
   Settings,
   Shield,
@@ -22,6 +23,11 @@ const menuItems = [
     title: "Users",
     icon: Users,
     href: "/admin/users",
+  },
+  {
+    title: "Layout",
+    icon: LayoutGrid,
+    href: "/admin/layouts",
   },
   {
     title: "Roles & Permissions",
